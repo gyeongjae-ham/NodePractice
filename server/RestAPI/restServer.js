@@ -18,7 +18,8 @@ http.createServer(async (req, res) => {
         const data = await fs.readFile('./comment.html');
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8'});
         return res.end(data);
-      } 
+      } 'asdfasdfdsafsafasdfdas'
+      'asdfddddddddddafsadfdasd'
       // /도 /about도 /users도 아니면
       try {
         const data = await fs.readFile(`.${req.url}`);
