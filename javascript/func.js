@@ -1,4 +1,4 @@
-const {odd, even} = require('./var');
+const {odd, even} = require('../var');
 
 function checkOddEven(number) {
     if (number % 2) {
