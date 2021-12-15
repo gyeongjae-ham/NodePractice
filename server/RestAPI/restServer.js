@@ -13,6 +13,10 @@ http.createServer(async (req, res) => {
       } else if (req.url === '/about') {
         const data = await fs.readFile('./about.html');
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(data); 
+      } else if (req.url === '/comment') {
+        const data = await fs.readFile('./comment.html');
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8'});
         return res.end(data);
       } else if (req.url === '/users') {
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -41,7 +45,7 @@ http.createServer(async (req, res) => {
           res.writeHead(201, { 'Content-Type': 'text/plain; charset=utf-8' });
           res.end('ok');
         });
-      }
+      } 
     } else if (req.method === 'PUT') {
       if (req.url.startsWith('/user/')) {
         const key = req.url.split('/')[2];
