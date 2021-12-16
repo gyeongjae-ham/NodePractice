@@ -5,7 +5,8 @@ const cookieparser = require('cookie-parser');
 const session = require('express-session');
 const dotenv = require('dotenv');
 dotenv.config();
-
+const indexRouter = require('./routes');
+const userRouter = require('./routes/user');
 const app = express();
 
 // 순서를 따지자면 set하는 부분이 제일 윗 부분이고 전체 route에 적용할 middleware 그 다음 기본 route들
@@ -36,8 +37,11 @@ app.use(session({
     cookie: {
         httpOnly: true,
     },
-    name: 'connect.sid',
+    name: 'session-cookie',
 }));
+
+app.use('/', indexRouter);
+app.use('/user', userRouter);
 
 const multer = require('multer');
 const fs = require('fs');
@@ -85,19 +89,6 @@ app.use(express.urlencoded({ extended: true })); // true면 qs, false면 query s
 // 이미지나 동영상 파일 업로드할 경 ex) 파일 선택창 떠서 파일 선택 업로드하는 feature.
 // form 태그의 enctype이 multipart/form-data인 경우이다
 // 이 때는 body-parser 기능으로 해석할 수 없어서 multer라는 패키지를 이용한다
-
-app.get('/', (req, res, next) => {
-    req.session;
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.get('/about', (req, res) => {
-    res.send('hello express');
-});
-
-app.get('/category/:name', (req, res) => {
-    res.send(`hello ${res.params.name}`);
-});
 
 app.use((req, res, next) => {
     res.status(404).send('404입니다');
