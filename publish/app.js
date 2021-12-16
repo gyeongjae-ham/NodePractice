@@ -20,6 +20,9 @@ const app = express();
 // next('rout')를 사용하면 다음 미들웨어가 아니라 다음 라우터로 넘어간다
 
 app.set('port', process.env.PORT || 3000);
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'pug');
+// pug는 코드를 많이 안쳐도 되고, 레이아웃을 설정할 수 있는 장점이 있지만 기존 html 문법과 많이 다르다는 단점도 있다
 
 // 미들웨어 순서가 매우 중요하다!!!
 // static 요청은 morgan 다음 정도가 좋다
