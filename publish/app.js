@@ -1,8 +1,9 @@
 const express = require('express');
-const path = require('path');
-const app = express();
 const morgan = require('morgan');
+const path = require('path');
 const cookieparser = require('cookie-parser');
+const session = require('express-session');
+const app = express();
 
 // 순서를 따지자면 set하는 부분이 제일 윗 부분이고 전체 route에 적용할 middleware 그 다음 기본 route들
 // 그 다음 wildcard 적용한 route들
@@ -22,28 +23,34 @@ app.set('port', process.env.PORT || 3000);
 // 요청이 들어오고, static을 먼저 처리하고 아니면 API로 넘어가면 되기 때문이다
 // 미들웨어 순서에 정답은 없고 서비스 환경에 따라서 미들웨어 순서를 조절하면 된다
 // ex) 로그인 한 유저에게만 static 파일을 제공하려면 cookie-parser랑 session이 static 미들웨어보다 위에 온다
+// 다른 middleware에게 정보를 전달하고 싶으면 req.data를 사용하는걸 추천한다
 
 app.use(morgan('dev'));
-// app.use('요청경로', express.static('실제경로'));
-app.use('/', express.static(path.join(__dirname, 'public-3030')));
 app.use(cookieparser('gyeongjaepassword'));
+app.use(session({
+    resave: false,
+    saveUninitialized: false,
+    secret: 'gyeongjaepassword',
+    cookie: {
+        httpOnly: true,
+    },
+    name: 'connect.sid',
+}));
+// app.use('요청경로', express.static('실제경로'));
+// middleware 확장법 실무에서 유용하게 사용되니 알아두자!!
+app.use('/', (req, res, next) => {
+    if (req.session.id) {
+        express.static(path.join(__dirname, 'public-3030'))(req, res, next)
+    } else {
+        next();
+    }
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // true면 qs, false면 query string(내장) qs 추천
 
 
 app.get('/', (req, res, next) => {
-    req.cookies // { mycookie: 'test' }
-    req.signedCookies;
-    // 'Set-Cookie': `name=${encodeURIComponent(name)}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
-    res.cookie('name', encodeURIComponent(name), {
-        expires: new Date(),
-        httpOnly: true,
-        path: '/',
-    });
-    res.clearCookiee('name', encodeURIComponent(name), {
-        httpOnly: true,
-        path: '/',
-    });
+    req.session;
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
