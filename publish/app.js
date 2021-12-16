@@ -36,6 +36,35 @@ app.use(session({
     },
     name: 'connect.sid',
 }));
+
+const multer = require('multer');
+const fs = require('fs');
+
+try {
+    fs.readdirSync('uploads');
+} catch (error) {
+    console.error('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
+    fs.mkdirSync('uploads');
+}
+const upload = multer({
+    storage: multer.diskStorage({
+        destination(req, file, done) {
+            done(null, 'uploads/');
+        },
+        filename(req, file, done) {
+            const ext = path.extname(file.originalname);
+            done(null, path.basename(file.originalname, ext) + Date.now() + ext);
+        },
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+});
+app.get('/upload', (req, res) => {
+    res.sendFile(path.join(__dirname, 'multipart.html'));
+});
+app.post('/upload', upload.single('image'), (req, res) => {
+    console.log(req.file);
+    res.send('ok');
+});
 // app.use('요청경로', express.static('실제경로'));
 // middleware 확장법 실무에서 유용하게 사용되니 알아두자!!
 app.use('/', (req, res, next) => {
@@ -45,9 +74,15 @@ app.use('/', (req, res, next) => {
         next();
     }
 });
+
+// body-parser 부분 이제 express 기본 내장되어 있기 때문에 따로 설치할 필요 x
+// form 요청 본문을 해석할 수 있음
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // true면 qs, false면 query string(내장) qs 추천
 
+// 이미지나 동영상 파일 업로드할 경 ex) 파일 선택창 떠서 파일 선택 업로드하는 feature.
+// form 태그의 enctype이 multipart/form-data인 경우이다
+// 이 때는 body-parser 기능으로 해석할 수 없어서 multer라는 패키지를 이용한다
 
 app.get('/', (req, res, next) => {
     req.session;
