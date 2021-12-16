@@ -4,6 +4,8 @@ const path = require('path');
 const cookieparser = require('cookie-parser');
 const session = require('express-session');
 const dotenv = require('dotenv');
+const nunjucks = require('nunjucks');
+
 dotenv.config();
 const indexRouter = require('./routes');
 const userRouter = require('./routes/user');
@@ -20,9 +22,14 @@ const app = express();
 // next('rout')를 사용하면 다음 미들웨어가 아니라 다음 라우터로 넘어간다
 
 app.set('port', process.env.PORT || 3000);
+nunjucks.configure('views', {
+    express: app,
+    watch: true,
+});
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'pug');
-// pug는 코드를 많이 안쳐도 되고, 레이아웃을 설정할 수 있는 장점이 있지만 기존 html 문법과 많이 다르다는 단점도 있다
+// pug 코드를 많이 안쳐도 되고, 레이아웃을 설정할 수 있는 장점이 있지만 기존 html 문법과 많이 다르다는 단점도 있다
+// pug 또는 넌적스 정도를 많이 사용한다 pug는 호불호가 있는 편이다
 
 // 미들웨어 순서가 매우 중요하다!!!
 // static 요청은 morgan 다음 정도가 좋다
@@ -93,13 +100,20 @@ app.use(express.urlencoded({ extended: true })); // true면 qs, false면 query s
 // form 태그의 enctype이 multipart/form-data인 경우이다
 // 이 때는 body-parser 기능으로 해석할 수 없어서 multer라는 패키지를 이용한다
 
+// 실제로 많이 사용하는 에러 처리 방식
+
 app.use((req, res, next) => {
-    res.status(404).send('404입니다');
+    const error = new Error(`${req.method} ${req.url} 라우터가 없습니다`);
+    error.status = 404;
+    next(error);
 });
 
+// 보안 상의 이유로 production 환경에서는 status 코드와 stack을 숨긴다
 app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).send('에러났지롱, 근데 안알려주지롱');
+    res.locals.message = err.message;
+    res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 app.listen(app.get('port'), () => {
