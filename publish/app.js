@@ -3,6 +3,9 @@ const morgan = require('morgan');
 const path = require('path');
 const cookieparser = require('cookie-parser');
 const session = require('express-session');
+const dotenv = require('dotenv');
+dotenv.config();
+
 const app = express();
 
 // 순서를 따지자면 set하는 부분이 제일 윗 부분이고 전체 route에 적용할 middleware 그 다음 기본 route들
@@ -15,7 +18,6 @@ const app = express();
 // 응답하는 코드 res. send, sendFile, render 등
 // next('rout')를 사용하면 다음 미들웨어가 아니라 다음 라우터로 넘어간다
 
-
 app.set('port', process.env.PORT || 3000);
 
 // 미들웨어 순서가 매우 중요하다!!!
@@ -26,11 +28,11 @@ app.set('port', process.env.PORT || 3000);
 // 다른 middleware에게 정보를 전달하고 싶으면 req.data를 사용하는걸 추천한다
 
 app.use(morgan('dev'));
-app.use(cookieparser('gyeongjaepassword'));
+app.use(cookieparser(process.env.COOKIE_SECRET));
 app.use(session({
     resave: false,
     saveUninitialized: false,
-    secret: 'gyeongjaepassword',
+    secret: process.env.COOKIE_SECRET,
     cookie: {
         httpOnly: true,
     },
