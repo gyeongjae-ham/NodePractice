@@ -17,10 +17,19 @@ const cookieparser = require('cookie-parser');
 
 app.set('port', process.env.PORT || 3000);
 
+// 미들웨어 순서가 매우 중요하다!!!
+// static 요청은 morgan 다음 정도가 좋다
+// 요청이 들어오고, static을 먼저 처리하고 아니면 API로 넘어가면 되기 때문이다
+// 미들웨어 순서에 정답은 없고 서비스 환경에 따라서 미들웨어 순서를 조절하면 된다
+// ex) 로그인 한 유저에게만 static 파일을 제공하려면 cookie-parser랑 session이 static 미들웨어보다 위에 온다
+
 app.use(morgan('dev'));
+// app.use('요청경로', express.static('실제경로'));
+app.use('/', express.static(path.join(__dirname, 'public-3030')));
 app.use(cookieparser('gyeongjaepassword'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // true면 qs, false면 query string(내장) qs 추천
+
 
 app.get('/', (req, res, next) => {
     req.cookies // { mycookie: 'test' }
